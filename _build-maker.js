@@ -13,4 +13,6 @@ if (out.indexOf('__HTML2CANVAS__') !== -1 || out.indexOf('__JSZIP__') !== -1) {
   throw new Error('A placeholder was not replaced — check the script tags in .src.html');
 }
 fs.writeFileSync(path.join(dir, 'card-news-maker.html'), out);
-console.log('built card-news-maker.html', out.length, 'bytes');
+// Also emit index.html so GitHub Pages serves the tool at the repo root URL.
+fs.writeFileSync(path.join(dir, 'index.html'), out);
+console.log('built card-news-maker.html + index.html', out.length, 'bytes');
