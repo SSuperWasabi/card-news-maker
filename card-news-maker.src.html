@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Prompt a Day — Card News Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sb-ink:#0A0A0A;--sb-paper:#FAFAFA;--sb-white:#FFFFFF;
+  --sb-stone-50:#F4F4F5;--sb-stone-100:#E5E5E5;--sb-stone-200:#D4D4D8;--sb-stone-300:#A1A1AA;--sb-stone-500:#71717A;
+  --sb-fg-1:var(--sb-ink);--sb-fg-2:var(--sb-stone-500);--sb-fg-3:var(--sb-stone-300);--sb-fg-on-ink:var(--sb-paper);
+  --sb-border:var(--sb-stone-100);
+  --sb-font-sans:"Inter",-apple-system,BlinkMacSystemFont,"Malgun Gothic","Helvetica Neue",Arial,sans-serif;
+  --sb-font-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --sb-track-tight:-0.03em;--sb-track-eyebrow:0.14em;
+  /* card = image area (--card-w) + caption bar (--cap-h); --card-h auto-set from images */
+  --card-w:1080px;--card-h:1200px;--cap-h:120px;--card-pad:96px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;}
+body{font-family:var(--sb-font-sans);color:var(--sb-fg-1);background:var(--sb-stone-100);-webkit-font-smoothing:antialiased;}
+
+/* ---------- App shell ---------- */
+.app{display:flex;height:100vh;overflow:hidden;}
+.editor{width:440px;flex:0 0 440px;background:var(--sb-white);border-right:1px solid var(--sb-stone-200);overflow-y:auto;padding:24px 24px 80px;}
+.stage{flex:1;display:flex;flex-direction:column;min-width:0;}
+.stage-bar{display:flex;align-items:center;gap:10px;padding:14px 24px;background:rgba(244,244,245,.95);border-bottom:1px solid var(--sb-stone-200);}
+.deck{flex:1;overflow-y:auto;padding:28px;display:flex;flex-wrap:wrap;gap:34px;align-content:flex-start;justify-content:center;}
+
+.app-title{font-weight:700;font-size:18px;letter-spacing:var(--sb-track-tight);margin:0 0 2px;}
+.app-sub{font-size:12px;color:var(--sb-fg-2);margin:0 0 18px;line-height:1.5;}
+
+.field{margin-bottom:16px;}
+.field > label{display:block;font-size:12px;font-weight:600;color:var(--sb-fg-1);margin-bottom:6px;letter-spacing:.01em;}
+.field .hint{font-weight:400;color:var(--sb-fg-3);}
+.btn-bold{font-family:var(--sb-font-mono);font-weight:700;font-size:12px;line-height:1;border:1px solid var(--sb-stone-200);
+  background:var(--sb-white);color:var(--sb-fg-1);padding:2px 8px;margin-left:6px;cursor:pointer;border-radius:0;vertical-align:middle;}
+.btn-bold:hover{background:var(--sb-ink);color:var(--sb-paper);border-color:var(--sb-ink);}
+.field input[type=text], .field textarea{
+  width:100%;font-family:var(--sb-font-sans);font-size:14px;color:var(--sb-ink);
+  padding:10px 12px;border:1px solid var(--sb-stone-200);border-radius:0;background:var(--sb-white);
+  transition:border-color .15s;}
+.field input[type=text]:focus, .field textarea:focus{outline:none;border-color:var(--sb-ink);}
+.field textarea{resize:vertical;min-height:62px;line-height:1.5;}
+
+.section-h{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--sb-fg-2);
+  margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--sb-stone-100);}
+
+.step-row{display:flex;gap:6px;margin-bottom:6px;}
+.step-row input{flex:1;min-width:0;}
+.step-row .tool-in{flex:0 0 120px;}
+.btn-mini{font-family:var(--sb-font-mono);font-size:12px;border:1px solid var(--sb-stone-200);background:var(--sb-white);
+  color:var(--sb-fg-1);padding:0 10px;cursor:pointer;border-radius:0;}
+.btn-mini:hover{background:var(--sb-ink);color:var(--sb-paper);border-color:var(--sb-ink);}
+.btn-add{font-size:12px;font-weight:500;border:1px dashed var(--sb-stone-300);background:transparent;color:var(--sb-fg-2);
+  padding:8px 12px;width:100%;cursor:pointer;border-radius:0;margin-top:2px;}
+.btn-add:hover{border-color:var(--sb-ink);color:var(--sb-ink);}
+
+/* image dropzone + thumbs */
+.drop{border:1px dashed var(--sb-stone-300);padding:18px;text-align:center;color:var(--sb-fg-2);font-size:13px;cursor:pointer;background:var(--sb-stone-50);}
+.drop.drag{border-color:var(--sb-ink);color:var(--sb-ink);background:var(--sb-white);}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.thumb{position:relative;width:72px;height:72px;border:1px solid var(--sb-stone-200);background-size:cover;background-position:center;}
+.thumb .n{position:absolute;left:0;top:0;background:var(--sb-ink);color:var(--sb-paper);font-family:var(--sb-font-mono);font-size:10px;padding:1px 4px;}
+.thumb .ctrl{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;background:rgba(10,10,10,.72);}
+.thumb .ctrl button{flex:1;border:0;background:transparent;color:#fff;font-size:12px;line-height:1;padding:3px 0;cursor:pointer;}
+.thumb .ctrl button:hover{background:rgba(255,255,255,.2);}
+
+.btn{font-family:var(--sb-font-sans);font-size:13px;font-weight:500;padding:10px 18px;border:1px solid var(--sb-ink);
+  border-radius:0;background:var(--sb-ink);color:var(--sb-paper);cursor:pointer;transition:background .15s,color .15s;}
+.btn.secondary{background:transparent;color:var(--sb-ink);}
+.btn:hover{background:var(--sb-stone-500);border-color:var(--sb-stone-500);color:var(--sb-paper);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.stage-bar .spacer{flex:1;}
+.stage-bar .status{font-family:var(--sb-font-mono);font-size:12px;color:var(--sb-fg-2);}
+
+/* ---------- Card preview (scaled) ---------- */
+.frame{--preview:0.30;position:relative;width:calc(var(--card-w)*var(--preview));height:calc(var(--card-h)*var(--preview));}
+.scaler{transform:scale(var(--preview));transform-origin:top left;width:var(--card-w);height:var(--card-h);}
+.frame .dl{position:absolute;top:8px;right:8px;z-index:10;font-family:var(--sb-font-mono);font-size:11px;letter-spacing:.04em;
+  padding:6px 10px;border:1px solid var(--sb-ink);background:var(--sb-paper);color:var(--sb-ink);cursor:pointer;opacity:0;transition:opacity .15s;}
+.frame:hover .dl{opacity:1;}
+.frame .dl:hover{background:var(--sb-ink);color:var(--sb-paper);}
+.frame .cap{position:absolute;left:0;bottom:-24px;font-family:var(--sb-font-mono);font-size:12px;color:var(--sb-fg-2);}
+
+.card{position:relative;width:var(--card-w);height:var(--card-h);background:var(--sb-paper);color:var(--sb-fg-1);
+  padding:var(--card-pad);border:1px solid var(--sb-border);display:flex;flex-direction:column;overflow:hidden;font-family:var(--sb-font-sans);}
+.card.ink{background:var(--sb-ink);color:var(--sb-fg-on-ink);border-color:var(--sb-ink);}
+.card.ink .eyebrow,.card.ink .foot{color:var(--sb-stone-300);}
+.card.ink .rule{background:rgba(250,250,250,.18);}
+.eyebrow{font-weight:500;font-size:22px;line-height:1.4;letter-spacing:var(--sb-track-eyebrow);text-transform:uppercase;color:var(--sb-fg-2);}
+.mono{font-family:var(--sb-font-mono);}
+.rule{height:1px;background:var(--sb-stone-200);border:0;}
+.grow{flex:1;}
+.foot{display:flex;align-items:center;gap:16px;font-size:24px;color:var(--sb-fg-2);}
+.foot .handle{font-weight:500;color:inherit;letter-spacing:-0.01em;}
+.foot .pageno{margin-left:auto;font-family:var(--sb-font-mono);font-size:22px;letter-spacing:.04em;}
+.topline{display:flex;align-items:baseline;justify-content:space-between;}
+.date{font-family:var(--sb-font-mono);font-size:26px;color:var(--sb-fg-2);}
+.headline{font-weight:700;font-size:84px;line-height:1.04;letter-spacing:var(--sb-track-tight);margin:0;}
+.headline em{font-style:normal;font-weight:300;color:var(--sb-stone-500);}
+.headline strong{font-weight:800;}
+.chain{font-family:var(--sb-font-mono);font-size:32px;line-height:1.5;color:var(--sb-fg-1);}
+.card.ink .chain{color:var(--sb-fg-on-ink);}
+.stepno{font-family:var(--sb-font-mono);font-size:28px;letter-spacing:.06em;color:var(--sb-fg-2);}
+.tool{font-weight:700;font-size:72px;line-height:1.05;letter-spacing:var(--sb-track-tight);margin:0;word-break:break-word;}
+.action{font-weight:300;font-size:36px;line-height:1.5;color:var(--sb-fg-1);margin:14px 0 0;}
+.insight{font-weight:300;font-size:54px;line-height:1.35;letter-spacing:-0.015em;margin:0;}
+.insight strong{font-weight:600;}
+.wordmark{font-weight:700;font-size:60px;letter-spacing:-0.04em;}
+.wordmark em{font-style:normal;font-weight:300;color:var(--sb-stone-300);}
+.tags{font-family:var(--sb-font-mono);font-size:28px;line-height:1.7;color:var(--sb-fg-2);word-spacing:.1em;}
+.card.ink .tags{color:var(--sb-stone-300);}
+.mt-4{margin-top:32px;}.mt-5{margin-top:48px;}.mb-4{margin-bottom:32px;}
+
+/* image card — FIT: whole image, centred on paper, never cropped/stretched.
+   No object-fit (html2canvas ignores it); max-width/height keeps the ratio. */
+.card.image{padding:0;border:0;}
+.card.image .media-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:var(--sb-paper);overflow:hidden;}
+.card.image img.media{display:block;max-width:100%;max-height:100%;width:auto;height:auto;}
+.card.image .cap-bar{height:var(--cap-h);display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:0 56px;border-top:1px solid var(--sb-border);background:var(--sb-paper);}
+.card.image .cap-line{font-family:var(--sb-font-mono);font-size:24px;line-height:1.4;color:var(--sb-fg-2);margin:0;}
+.card.image .cap-sig{font-family:var(--sb-font-mono);font-size:22px;color:var(--sb-fg-3);white-space:nowrap;}
+
+.empty{margin:auto;color:var(--sb-fg-3);font-size:14px;text-align:center;line-height:1.7;}
+
+.tpl-pick{display:flex;gap:8px;}
+.tpl-opt{display:flex;align-items:center;gap:6px;flex:1;border:1px solid var(--sb-stone-200);
+  padding:8px 10px;font-size:13px;cursor:pointer;}
+.tpl-opt input{accent-color:var(--sb-ink);}
+
+/* ================= Camera UI template ================= */
+/* shared 4:5 camera card baseline */
+.card.cam{padding:0;border:1px solid var(--sb-border);}
+
+/* --- 01 cover: viewfinder --- */
+.card.cam-cover{background:#1c1c1e;border-color:#1c1c1e;}
+.cam-cover .cam-img{position:absolute;inset:0;z-index:0;overflow:hidden;}
+.cam-cover .cam-img img{width:1080px;height:1350px;display:block;}
+.cam-cover .cam-scrim{position:absolute;inset:0;z-index:1;background:rgba(12,12,14,0.34);}
+.cam-cover .cam-hud{position:absolute;inset:0;z-index:2;color:#FAFAFA;}
+.cam-gv{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.26);}
+.cam-gh{position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.26);}
+.cam-br{position:absolute;width:74px;height:74px;}
+.cam-br.tl{top:48px;left:48px;border-top:3px solid #fff;border-left:3px solid #fff;}
+.cam-br.tr{top:48px;right:48px;border-top:3px solid #fff;border-right:3px solid #fff;}
+.cam-br.bl{bottom:48px;left:48px;border-bottom:3px solid #fff;border-left:3px solid #fff;}
+.cam-br.brr{bottom:48px;right:48px;border-bottom:3px solid #fff;border-right:3px solid #fff;}
+.cam-af{position:absolute;left:50%;top:360px;transform:translateX(-50%);width:360px;height:360px;}
+.cam-af .c{position:absolute;width:46px;height:46px;}
+.cam-af .c.tl{top:0;left:0;border-top:4px solid #fff;border-left:4px solid #fff;}
+.cam-af .c.tr{top:0;right:0;border-top:4px solid #fff;border-right:4px solid #fff;}
+.cam-af .c.bl{bottom:0;left:0;border-bottom:4px solid #fff;border-left:4px solid #fff;}
+.cam-af .c.brr{bottom:0;right:0;border-bottom:4px solid #fff;border-right:4px solid #fff;}
+.cam-af .cx{position:absolute;left:50%;top:50%;background:rgba(255,255,255,.92);}
+.cam-af .cx.h{transform:translate(-50%,-50%);width:38px;height:2px;}
+.cam-af .cx.v{transform:translate(-50%,-50%);width:2px;height:38px;}
+.cam-af .aflabel{position:absolute;top:-48px;left:0;font-family:var(--sb-font-mono);font-size:24px;letter-spacing:.1em;color:#fff;}
+.cam-top{position:absolute;top:84px;left:96px;right:96px;display:flex;align-items:center;justify-content:space-between;}
+.cam-top .eb{font-weight:500;font-size:24px;letter-spacing:.16em;text-transform:uppercase;}
+.cam-rec{font-family:var(--sb-font-mono);font-size:24px;letter-spacing:.08em;display:flex;align-items:center;gap:12px;}
+.cam-rec .dot{width:16px;height:16px;border-radius:50%;background:#fff;display:inline-block;}
+.cam-bottom{position:absolute;left:96px;right:96px;bottom:92px;}
+.cam-readout{font-family:var(--sb-font-mono);font-size:24px;letter-spacing:.06em;color:rgba(255,255,255,.78);margin-bottom:22px;}
+.cam-headline{font-weight:800;font-size:96px;line-height:1.0;letter-spacing:-0.04em;margin:0;}
+.cam-headline .lt{font-weight:300;color:rgba(255,255,255,.85);}
+.cam-chain{font-family:var(--sb-font-mono);font-size:30px;letter-spacing:.04em;margin-top:26px;}
+.cam-cover .cam-rule{height:1px;background:rgba(255,255,255,.28);margin:30px 0 22px;border:0;}
+.cam-cover .cam-foot{display:flex;align-items:center;justify-content:space-between;font-size:24px;color:rgba(255,255,255,.8);}
+.cam-cover .cam-foot .handle{font-weight:500;}
+.cam-cover .cam-foot .pageno{font-family:var(--sb-font-mono);letter-spacing:.06em;}
+
+/* --- 03 workflow (1 card) --- */
+.card.cam-wf{background:var(--sb-paper);color:var(--sb-ink);padding:96px;}
+.cam-wf .topline{display:flex;align-items:baseline;justify-content:space-between;}
+.cam-wf .eb{font-weight:500;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--sb-stone-500);}
+.cam-wf .pg{font-family:var(--sb-font-mono);font-size:24px;color:var(--sb-stone-500);}
+.cam-wf .list{flex:1;display:flex;flex-direction:column;justify-content:center;gap:60px;}
+.cam-wf .stepno{font-family:var(--sb-font-mono);font-size:26px;letter-spacing:.06em;color:var(--sb-stone-300);margin-bottom:10px;}
+.cam-wf .tool{font-weight:700;font-size:66px;letter-spacing:-0.03em;line-height:1.0;}
+.cam-wf .desc{font-weight:300;font-size:32px;line-height:1.45;color:#3f3f46;margin-top:12px;}
+.cam-wf .wfrule{height:1px;background:var(--sb-stone-100);border:0;}
+.cam-wf .foot{display:flex;align-items:center;justify-content:space-between;font-size:24px;color:var(--sb-stone-500);border-top:1px solid var(--sb-stone-100);padding-top:22px;}
+.cam-wf .foot .handle{font-weight:500;}.cam-wf .foot .pageno{font-family:var(--sb-font-mono);}
+
+/* --- 04 main body --- */
+.card.cam-body{background:var(--sb-paper);color:var(--sb-ink);padding:96px;}
+.cam-body .eb{font-weight:500;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--sb-stone-500);}
+.cam-body .pt{flex:1;display:flex;align-items:center;}
+.cam-body .pt p{font-weight:300;font-size:66px;line-height:1.32;letter-spacing:-0.02em;margin:0;}
+.cam-body .pt strong{font-weight:700;}
+.cam-body .brule{height:1px;background:var(--sb-stone-100);border:0;margin-bottom:22px;}
+.cam-body .foot{display:flex;align-items:center;justify-content:space-between;font-size:24px;color:var(--sb-stone-500);}
+.cam-body .foot .handle{font-weight:500;}.cam-body .foot .pageno{font-family:var(--sb-font-mono);}
+
+/* --- 05 the prompt --- */
+.card.cam-prompt{background:var(--sb-paper);color:var(--sb-ink);padding:96px;}
+.cam-prompt .topline{display:flex;align-items:baseline;justify-content:space-between;}
+.cam-prompt .eb{font-weight:500;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--sb-stone-500);}
+.cam-prompt .pg{font-family:var(--sb-font-mono);font-size:24px;color:var(--sb-stone-500);}
+.cam-prompt .body{flex:1;display:flex;align-items:center;overflow:hidden;}
+.cam-prompt .body p{font-family:var(--sb-font-mono);font-size:30px;line-height:1.6;color:var(--sb-ink);margin:0;}
+.cam-prompt .foot{display:flex;align-items:center;justify-content:space-between;font-size:24px;color:var(--sb-stone-500);border-top:1px solid var(--sb-stone-100);padding-top:22px;}
+.cam-prompt .foot .handle{font-weight:500;}.cam-prompt .foot .pageno{font-family:var(--sb-font-mono);}
+
+/* --- 06 for more / brand --- */
+.card.cam-more{background:var(--sb-ink);color:var(--sb-paper);border-color:var(--sb-ink);padding:96px;justify-content:space-between;}
+.cam-more .topline{display:flex;align-items:baseline;justify-content:space-between;}
+.cam-more .eb{font-weight:500;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--sb-stone-300);}
+.cam-more .pg{font-family:var(--sb-font-mono);font-size:24px;color:var(--sb-stone-300);}
+.cam-more .mid{display:block;}
+.cam-more .wordmark{font-weight:800;font-size:88px;line-height:1.0;letter-spacing:-0.04em;margin:0;}
+.cam-more .wordmark em{font-style:normal;color:rgba(250,250,250,.4);}
+.cam-more .more-h{font-weight:500;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--sb-stone-300);margin:56px 0 18px;}
+.cam-more .links{display:flex;flex-direction:column;border-bottom:1px solid rgba(250,250,250,.16);}
+.cam-more .lrow{display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:20px 0;border-top:1px solid rgba(250,250,250,.16);}
+.cam-more .lrow .plat{font-weight:600;font-size:32px;letter-spacing:-0.01em;}
+.cam-more .lrow .url{font-family:var(--sb-font-mono);font-size:24px;color:var(--sb-stone-300);white-space:nowrap;}
+.cam-more .foot{display:flex;align-items:center;justify-content:space-between;font-size:30px;border-top:1px solid rgba(250,250,250,.2);padding-top:22px;}
+.cam-more .foot .handle{font-weight:700;letter-spacing:-0.03em;}
+.cam-more .foot .mark{font-family:var(--sb-font-mono);font-size:24px;color:var(--sb-stone-300);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= EDITOR ================= -->
+  <div class="editor">
+    <h1 class="app-title">One Prompt a Day — Card News Maker</h1>
+    <p class="app-sub">왼쪽을 채우고 이미지를 끌어다 놓으면 오른쪽에 카드가 만들어집니다.<br>완성되면 카드별 <b>PNG</b> 또는 전체 <b>ZIP</b>으로 저장하세요. 설치 불필요 · 이 파일 하나로 동작.</p>
+
+    <div class="section-h">기본</div>
+    <div class="field">
+      <label>템플릿</label>
+      <div class="tpl-pick">
+        <label class="tpl-opt"><input type="radio" name="tpl" value="classic" checked> 기존 컨셉</label>
+        <label class="tpl-opt"><input type="radio" name="tpl" value="camera"> 카메라 UI</label>
+      </div>
+    </div>
+    <div class="field"><label>핸들 (본인 계정)</label><input type="text" id="f-handle" value="@ssuperwasabi"></div>
+    <div class="field"><label>날짜</label><input type="text" id="f-date" placeholder="2026.05.31"></div>
+
+    <div class="section-h">표지</div>
+    <div class="field"><label>핵심 한 줄 <span class="hint">(줄바꿈 가능 · 표지 큰 글씨)</span><button type="button" class="btn-bold" data-bold="f-headline" title="선택 후 굵게 (Ctrl+B)">B</button></label><textarea id="f-headline" placeholder="Close-up portraits — every detail."></textarea></div>
+    <div class="field"><label>툴 체인 <span class="hint">(Enter로 줄바꿈 · 예: Gemini → GPT Image2 → Magnific)</span></label><textarea id="f-chain" placeholder="Gemini →&#10;GPT Image2 →&#10;Magnific"></textarea></div>
+
+    <div class="section-h">이미지 <span class="hint" style="text-transform:none;letter-spacing:0;font-weight:400;">(1장 = 1카드, 순서대로)</span></div>
+    <div class="field">
+      <div class="drop" id="drop">여기로 이미지를 끌어다 놓거나 클릭해서 선택<br><span class="hint">JPG / PNG · 여러 장 한꺼번에 OK</span>
+        <input type="file" id="f-images" accept="image/*" multiple hidden>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+    <div class="field"><label>이미지 캡션 공통 <span class="hint">(각 이미지 카드 하단 글씨)</span></label><input type="text" id="f-imgcap" placeholder="GPT Image2 → Magnific"></div>
+
+    <div class="section-h">워크플로우 (단계)</div>
+    <div id="steps"></div>
+    <button class="btn-add" id="add-step">+ 단계 추가</button>
+
+    <div class="section-h">마무리</div>
+    <div class="field"><label>인사이트 / 한마디 <span class="hint">(드래그 선택 후 B)</span><button type="button" class="btn-bold" data-bold="f-insight" title="선택 후 굵게 (Ctrl+B)">B</button></label><textarea id="f-insight" placeholder="The close-up is the hardest shot to get right with AI."></textarea></div>
+    <div class="field"><label>엔딩 — 사용한 프롬프트 <span class="hint">(카메라 템플릿: The Prompt 카드)</span></label><textarea id="f-prompt" placeholder="A close-up portrait of a young woman, soft freckles, natural light ..."></textarea></div>
+    <div class="field"><label>해시태그 <span class="hint">(#SSUPERWASABI 자동 추가)</span></label><input type="text" id="f-tags" placeholder="#gptimage2 #magnific #AIphotography #portraitAI"></div>
+  </div>
+
+  <!-- ================= STAGE ================= -->
+  <div class="stage">
+    <div class="stage-bar">
+      <button class="btn" id="dl-all">↓ 전체 다운로드 (ZIP)</button>
+      <button class="btn secondary" id="reset">초기화</button>
+      <div class="spacer"></div>
+      <div class="status mono" id="status">ready</div>
+    </div>
+    <div class="deck" id="deck"></div>
+  </div>
+
+</div>
+
+<!-- bundled libraries (inlined for single-file portability) -->
+<script>__HTML2CANVAS__</script>
+<script>__JSZIP__</script>
+
+<script>
+"use strict";
+
+// ---------- state ----------
+var state = {
+  template: "classic",     // "classic" | "camera"
+  handle: "@ssuperwasabi",
+  date: "",
+  headline: "",
+  chain: "",
+  imgcap: "",
+  images: [],            // array of {url, w, h} — whole image (jpeg), NOT cropped
+  steps: [{tool:"",act:""}],
+  insight: "",
+  prompt: "",
+  tags: ""
+};
+
+// Export size — auto-set from the images by recomputeCardSize().
+var CARD_W = 1080, CARD_H = 1200;
+
+var $ = function(id){ return document.getElementById(id); };
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function nl2br(s){ return esc(s).replace(/\n/g,"<br>"); }
+// **bold** -> <strong>. Runs AFTER esc (via nl2br) so it is XSS-safe; only the ** markers become tags.
+function mdBold(s){ return nl2br(s).replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>"); }
+function setStatus(t){ $("status").textContent = t; }
+
+function todayStr(){
+  var d = new Date();
+  var m = ("0"+(d.getMonth()+1)).slice(-2);
+  var day = ("0"+d.getDate()).slice(-2);
+  return d.getFullYear()+"."+m+"."+day;
+}
+
+// ---------- load image WHOLE (no crop); downscale to fit, keep ratio ----------
+function loadImage(file){
+  return new Promise(function(resolve){
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function(){
+      var ow = img.width, oh = img.height;
+      // downscale to fit a generous box (keeps file small); ratio preserved, no crop
+      var maxW = 1080, maxH = 1350;
+      var scale = Math.min(maxW/ow, maxH/oh, 1);
+      var w = Math.round(ow*scale), h = Math.round(oh*scale);
+      var c = document.createElement("canvas"); c.width=w; c.height=h;
+      var ctx = c.getContext("2d");
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve({ url: c.toDataURL("image/jpeg", 0.88), w: ow, h: oh });
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+// Cover-crop the first image to WxH via canvas (html2canvas ignores object-fit,
+// so we bake the crop into the pixels — same idea as the classic plate Fit).
+var coverCropCache = { srcUrl: null, out: null };
+function ensureCoverCrop(){
+  if(state.template !== "camera" || !state.images.length){ return; }
+  var src = state.images[0].url;
+  if(coverCropCache.srcUrl === src && coverCropCache.out){ return; }   // already done
+  var img = new Image();
+  img.onload = function(){
+    var W = 1080, H = 1350;
+    var s = Math.max(W/img.width, H/img.height);
+    var tw = Math.ceil(img.width*s), th = Math.ceil(img.height*s);
+    var c = document.createElement("canvas"); c.width = W; c.height = H;
+    var ctx = c.getContext("2d");
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, Math.round((W-tw)/2), Math.round((H-th)/2), tw, th);
+    coverCropCache = { srcUrl: src, out: c.toDataURL("image/jpeg", 0.9) };
+    render();   // re-render now that the cropped cover is ready
+  };
+  img.src = src;
+}
+
+// ---------- auto-ratio: card height follows the median image ratio ----------
+// card = image area (1080 wide) + caption (CAP); clamp to IG-safe 566..1350.
+function recomputeCardSize(){
+  if(state.template === "camera"){
+    CARD_H = 1350;
+    document.documentElement.style.setProperty("--card-h", "1350px");
+    return;
+  }
+  var W = 1080, CAP = 120, MIN = 566, MAX = 1350, cardH;
+  if(!state.images.length){
+    cardH = 1080;                 // text-only deck -> clean 1:1 square
+  } else {
+    var rs = state.images.map(function(im){ return im.w/im.h; }).sort(function(a,b){ return a-b; });
+    var mid = Math.floor(rs.length/2);
+    var median = (rs.length % 2) ? rs[mid] : (rs[mid-1]+rs[mid])/2;
+    cardH = Math.round(W/median) + CAP;
+    cardH = Math.max(MIN, Math.min(MAX, cardH));
+  }
+  CARD_H = cardH;
+  document.documentElement.style.setProperty("--card-h", cardH + "px");
+}
+
+async function addFiles(files){
+  var list = Array.prototype.slice.call(files).filter(function(f){ return /^image\//.test(f.type); });
+  if(!list.length) return;
+  setStatus("processing " + list.length + " image(s) ...");
+  for(var i=0;i<list.length;i++){
+    var d = await loadImage(list[i]);
+    if(d) state.images.push(d);
+  }
+  setStatus("ready");
+  renderThumbs(); render();
+}
+
+// ---------- editor: thumbs + steps ----------
+function renderThumbs(){
+  var wrap = $("thumbs"); wrap.innerHTML="";
+  state.images.forEach(function(d, i){
+    var el = document.createElement("div");
+    el.className="thumb"; el.style.backgroundImage="url('"+d.url+"')";
+    el.innerHTML = '<span class="n">'+(i+1)+'</span>'+
+      '<div class="ctrl"><button data-a="up">&#8593;</button><button data-a="down">&#8595;</button><button data-a="del">&times;</button></div>';
+    el.querySelector('[data-a=up]').onclick=function(){ move(i,-1); };
+    el.querySelector('[data-a=down]').onclick=function(){ move(i,1); };
+    el.querySelector('[data-a=del]').onclick=function(){ state.images.splice(i,1); renderThumbs(); render(); };
+    wrap.appendChild(el);
+  });
+}
+function move(i,dir){
+  var j=i+dir; if(j<0||j>=state.images.length) return;
+  var t=state.images[i]; state.images[i]=state.images[j]; state.images[j]=t;
+  renderThumbs(); render();
+}
+
+function renderSteps(){
+  var wrap=$("steps"); wrap.innerHTML="";
+  state.steps.forEach(function(s,i){
+    var row=document.createElement("div"); row.className="step-row";
+    row.innerHTML='<input class="tool-in" type="text" placeholder="툴" value="'+esc(s.tool)+'">'+
+                  '<input type="text" placeholder="한 일" value="'+esc(s.act)+'">'+
+                  '<button class="btn-mini" title="삭제">&times;</button>';
+    var ins=row.querySelectorAll("input");
+    ins[0].oninput=function(){ state.steps[i].tool=this.value; render(); };
+    ins[1].oninput=function(){ state.steps[i].act=this.value; render(); };
+    row.querySelector("button").onclick=function(){ state.steps.splice(i,1); if(!state.steps.length) state.steps.push({tool:"",act:""}); renderSteps(); render(); };
+    wrap.appendChild(row);
+  });
+}
+
+// ---------- build card HTML ----------
+function pp(n,total){ return ("0"+n).slice(-2)+" / "+("0"+total).slice(-2); }
+
+function buildCards(){
+  return state.template === "camera" ? buildCardsCamera() : buildCardsClassic();
+}
+
+function camHeadline(){
+  // first line -> weight 800; following lines -> light (300). Empty -> placeholder.
+  var lines = (state.headline||"Close-up\nportraits.").split("\n");
+  var first = esc(lines.shift());
+  var rest = lines.length ? '<br><span class="lt">'+esc(lines.join(" "))+'</span>' : '';
+  return first + rest;
+}
+
+function buildCardsCamera(){
+  var imgs = state.images;
+  var steps = state.steps.filter(function(s){ return (s.tool||s.act); });
+  var total = 1 + imgs.length + 1 + 1 + 1 + 1;   // cover + plates + workflow + body + prompt + for-more
+  var page = 0, html = "", id = 0;
+  var date = esc(state.date||""), handle = esc(state.handle||"@ssuperwasabi");
+  function frame(inner, capLabel){
+    return '<div class="frame"><div class="scaler">'+inner+'</div>'+
+      '<button class="dl" data-card="card'+id+'" data-name="1pd-card-'+("0"+page).slice(-2)+'.png">&#8595; PNG</button>'+
+      '<span class="cap">'+("0"+page).slice(-2)+' &middot; '+capLabel+'</span></div>';
+  }
+
+  // ---- 01 cover (viewfinder) ----
+  page++; id=page;
+  var coverImg = coverCropCache.out
+    ? '<div class="cam-img"><img src="'+coverCropCache.out+'" alt=""></div>'
+    : (imgs.length ? '<div class="cam-img"><img src="'+imgs[0].url+'" style="object-fit:cover" alt=""></div>' : '');
+  html += frame(
+    '<div class="card cam cam-cover" id="card'+id+'">'+
+      coverImg +
+      '<div class="cam-scrim"></div>'+
+      '<div class="cam-hud">'+
+        '<div class="cam-gv" style="left:33.33%"></div><div class="cam-gv" style="left:66.66%"></div>'+
+        '<div class="cam-gh" style="top:33.33%"></div><div class="cam-gh" style="top:66.66%"></div>'+
+        '<div class="cam-br tl"></div><div class="cam-br tr"></div><div class="cam-br bl"></div><div class="cam-br brr"></div>'+
+        '<div class="cam-af"><div class="aflabel">AF &middot; FACE</div>'+
+          '<div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c brr"></div>'+
+          '<div class="cx h"></div><div class="cx v"></div></div>'+
+        '<div class="cam-top"><span class="eb">One Prompt a Day</span>'+
+          '<span class="cam-rec"><span class="dot"></span>REC &middot; AI-GEN</span></div>'+
+        '<div class="cam-bottom">'+
+          '<div class="cam-readout">f/1.8 &nbsp; 1/250 &nbsp; ISO 100</div>'+
+          '<h2 class="cam-headline">'+camHeadline()+'</h2>'+
+          (state.chain ? '<div class="cam-chain">'+nl2br(state.chain)+'</div>' : '')+
+          '<hr class="cam-rule">'+
+          '<div class="cam-foot"><span class="handle">'+handle+'</span><span class="pageno">'+pp(page,total)+'</span></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>', 'cover');
+
+  var areaW = 1080, areaH = 1350 - 120;
+  imgs.forEach(function(d, k){
+    page++; id=page;
+    var s = Math.min(areaW/d.w, areaH/d.h);
+    var iw = Math.round(d.w*s), ih = Math.round(d.h*s);
+    var cap = state.imgcap ? esc(state.imgcap) : ('Plate '+("0"+(k+1)).slice(-2)+' / '+("0"+imgs.length).slice(-2));
+    html += frame(
+      '<div class="card image" id="card'+id+'">'+
+        '<div class="media-wrap"><img class="media" style="width:'+iw+'px;height:'+ih+'px" src="'+d.url+'" alt=""></div>'+
+        '<div class="cap-bar"><span class="cap-line">'+cap+'</span>'+
+        '<span class="cap-sig">'+handle+' &middot; '+pp(page,total)+'</span></div>'+
+      '</div>', 'plate '+(k+1));
+  });
+  // ---- 03 workflow (single card, up to 3 steps) ----
+  page++; id=page;
+  var wfRows = "";
+  var shown = steps.slice(0,3);
+  if(!shown.length){ shown = [{tool:"",act:""}]; }
+  shown.forEach(function(s, i){
+    if(i>0){ wfRows += '<hr class="wfrule">'; }
+    wfRows += '<div>'+
+      '<div class="stepno">'+("0"+(i+1)).slice(-2)+'</div>'+
+      '<div class="tool">'+(esc(s.tool)||'&nbsp;')+'</div>'+
+      (s.act ? '<div class="desc">'+esc(s.act)+'</div>' : '')+
+    '</div>';
+  });
+  html += frame(
+    '<div class="card cam-wf" id="card'+id+'">'+
+      '<div class="topline"><span class="eb">Workflow</span><span class="pg">'+pp(page,total)+'</span></div>'+
+      '<div class="list">'+wfRows+'</div>'+
+      '<div class="foot"><span class="handle">'+handle+'</span><span class="pageno">'+pp(page,total)+'</span></div>'+
+    '</div>', 'workflow');
+
+  // ---- 04 main body ----
+  page++; id=page;
+  html += frame(
+    '<div class="card cam-body" id="card'+id+'">'+
+      '<span class="eb">The Point</span>'+
+      '<div class="pt"><p>'+(mdBold(state.insight)||'&nbsp;')+'</p></div>'+
+      '<hr class="brule">'+
+      '<div class="foot"><span class="handle">'+handle+'</span><span class="pageno">'+pp(page,total)+'</span></div>'+
+    '</div>', 'body');
+
+  // ---- 05 the prompt ----
+  page++; id=page;
+  html += frame(
+    '<div class="card cam-prompt" id="card'+id+'">'+
+      '<div class="topline"><span class="eb">The Prompt</span><span class="pg">'+pp(page,total)+'</span></div>'+
+      '<div class="body"><p>'+(nl2br(state.prompt)||'&nbsp;')+'</p></div>'+
+      '<div class="foot"><span class="handle">'+handle+'</span><span class="pageno">'+pp(page,total)+'</span></div>'+
+    '</div>', 'prompt');
+
+  // ---- 06 for more / brand ----
+  page++; id=page;
+  html += frame(
+    '<div class="card cam-more" id="card'+id+'">'+
+      '<div class="topline"><span class="eb">One Prompt a Day</span><span class="pg">'+pp(page,total)+'</span></div>'+
+      '<div class="mid">'+
+        '<div class="wordmark">One Prompt<br>a Day<em>.</em></div>'+
+        '<div class="more-h">For More</div>'+
+        '<div class="links">'+
+          '<div class="lrow"><span class="plat">Instagram</span><span class="url">instagram.com/ssuperwasabi_ai</span></div>'+
+          '<div class="lrow"><span class="plat">Facebook</span><span class="url">facebook.com/ssuperwasabi</span></div>'+
+          '<div class="lrow"><span class="plat">Threads</span><span class="url">threads.com/@ssuperwasabi</span></div>'+
+          '<div class="lrow"><span class="plat">YouTube</span><span class="url">youtube.com/@SSuperWasabi_AI</span></div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="foot"><span class="handle">'+handle+'</span><span class="mark">1pd</span></div>'+
+    '</div>', 'for more');
+
+  return html;
+}
+
+function buildCardsClassic(){
+  var imgs=state.images, steps=state.steps.filter(function(s){return (s.tool||s.act);});
+  var total = 1 + imgs.length + steps.length + 1 + 1;
+  var page=0, html="", id=0;
+  function frame(inner, capLabel){
+    return '<div class="frame"><div class="scaler">'+inner+'</div>'+
+      '<button class="dl" data-card="card'+id+'" data-name="1pd-card-'+("0"+page).slice(-2)+'.png">&#8595; PNG</button>'+
+      '<span class="cap">'+("0"+page).slice(-2)+' &middot; '+capLabel+'</span></div>';
+  }
+  var date = esc(state.date||""), handle=esc(state.handle||"@ssuperwasabi");
+
+  // cover
+  page++; id=page;
+  html += frame(
+    '<div class="card ink" id="card'+id+'">'+
+      '<div class="topline"><span class="eyebrow">One Prompt a Day</span><span class="date mono">'+date+'</span></div>'+
+      '<div class="grow"></div>'+
+      '<h2 class="headline">'+(mdBold(state.headline)||'&nbsp;')+'</h2>'+
+      '<div class="chain mt-4">'+nl2br(state.chain)+'</div>'+
+      '<div class="grow"></div><hr class="rule mb-4">'+
+      '<div class="foot"><span class="handle">'+handle+'</span><span class="pageno">'+pp(page,total)+'</span></div>'+
+    '</div>', 'cover');
+
+  // images
+  var areaW = 1080, areaH = CARD_H - 120;
+  imgs.forEach(function(d, k){
+    page++; id=page;
+    var cap = state.imgcap ? esc(state.imgcap) : '';
+    var plate = 'Plate '+("0"+(k+1)).slice(-2)+' / '+("0"+imgs.length).slice(-2)+(cap?' &middot; '+cap:'');
+    // contain-fit to the media area (scales up small images too); ratio preserved
+    var s = Math.min(areaW/d.w, areaH/d.h);
+    var iw = Math.round(d.w*s), ih = Math.round(d.h*s);
+    html += frame(
+      '<div class="card image" id="card'+id+'">'+
+        '<div class="media-wrap"><img class="media" style="width:'+iw+'px;height:'+ih+'px" src="'+d.url+'" alt=""></div>'+
+        '<div class="cap-bar"><span class="cap-line">'+plate+'</span>'+
+        '<span class="cap-sig">'+handle+' &middot; '+pp(page,total)+'</span></div>'+
+      '</div>', 'image '+(k+1));
+  });
+
+  // steps
+  steps.forEach(function(s, k){
+    page++; id=page;
+    html += frame(
+      '<div class="card" id="card'+id+'">'+
+        '<div class="topline"><span class="eyebrow">Workflow</span><span class="stepno mono">'+pp(k+1,steps.length).replace(/ \/ /,' / ')+'</span></div>'+
+        '<div class="grow"></div>'+
+        '<h2 class="tool">'+(esc(s.tool)||'&nbsp;')+'</h2>'+
+        '<p class="action">'+esc(s.act)+'</p>'+
+        '<div class="grow"></div><hr class="rule mb-4">'+
+        '<div class="foot"><span class="handle">'+handle+'</span><span class="pageno">'+pp(page,total)+'</span></div>'+
+      '</div>', 'step '+(k+1));
+  });
+
+  // insight
+  page++; id=page;
+  html += frame(
+    '<div class="card" id="card'+id+'">'+
+      '<span class="eyebrow">Takeaway</span>'+
+      '<div class="grow"></div>'+
+      '<p class="insight">'+(mdBold(state.insight)||'&nbsp;')+'</p>'+
+      '<div class="grow"></div><hr class="rule mb-4">'+
+      '<div class="foot"><span class="handle">'+handle+'</span><span class="pageno">'+pp(page,total)+'</span></div>'+
+    '</div>', 'insight');
+
+  // outro
+  page++; id=page;
+  var tags = (state.tags||"").trim();
+  if(tags && !/#SSUPERWASABI/i.test(tags)) tags += " #SSUPERWASABI";
+  if(!tags) tags = "#SSUPERWASABI";
+  html += frame(
+    '<div class="card ink" id="card'+id+'">'+
+      '<div class="topline"><span class="eyebrow">One Prompt a Day</span><span class="date mono">'+date+'</span></div>'+
+      '<div class="grow"></div>'+
+      '<div class="wordmark">One Prompt<br>a Day<em>.</em></div>'+
+      '<div class="tags mt-5">'+esc(tags)+'</div>'+
+      '<div class="grow"></div><hr class="rule mb-4">'+
+      '<div class="foot"><span class="handle">'+handle+'</span><span class="pageno">'+pp(page,total)+'</span></div>'+
+    '</div>', 'outro');
+
+  return html;
+}
+
+function render(){
+  ensureCoverCrop();
+  recomputeCardSize();
+  var deck=$("deck");
+  deck.innerHTML = buildCards();
+  deck.querySelectorAll(".dl").forEach(function(b){
+    b.onclick=function(){ dlOne(this.getAttribute("data-card"), this.getAttribute("data-name")); };
+  });
+}
+
+// ---------- capture + download ----------
+async function captureCard(card){
+  if(document.fonts && document.fonts.ready) await document.fonts.ready;
+  var holder=document.createElement("div");
+  holder.style.cssText="position:fixed;left:-99999px;top:0;width:"+CARD_W+"px;height:"+CARD_H+"px;margin:0;padding:0;";
+  var clone=card.cloneNode(true); clone.style.transform="none";
+  holder.appendChild(clone); document.body.appendChild(holder);
+  var imgs=clone.querySelectorAll("img");
+  await Promise.all(Array.prototype.map.call(imgs,function(im){ return im.decode?im.decode().catch(function(){}):Promise.resolve(); }));
+  try{ return await html2canvas(clone,{scale:1,backgroundColor:null,useCORS:true,logging:false,width:CARD_W,height:CARD_H}); }
+  finally{ document.body.removeChild(holder); }
+}
+function saveBlob(blob, filename){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a"); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },1000);
+}
+async function dlOne(cardId, filename){
+  try{
+    setStatus("rendering "+filename+" ...");
+    var canvas=await captureCard(document.getElementById(cardId));
+    var blob=await new Promise(function(res,rej){ canvas.toBlob(function(b){ b?res(b):rej(new Error("toBlob null")); },"image/png"); });
+    saveBlob(blob, filename);
+    setStatus("saved "+filename);
+  }catch(e){ setStatus("error: "+e.message); console.error(e); }
+}
+async function dlAll(){
+  try{
+    if(typeof JSZip==="undefined"){ alert("JSZip 로드 실패"); return; }
+    var cards=Array.prototype.slice.call(document.querySelectorAll(".card"));
+    if(!cards.length) return;
+    var zip=new JSZip();
+    for(var i=0;i<cards.length;i++){
+      setStatus("rendering "+(i+1)+" / "+cards.length+" ...");
+      var canvas=await captureCard(cards[i]);
+      var blob=await new Promise(function(res,rej){ canvas.toBlob(function(b){ b?res(b):rej(new Error("toBlob null")); },"image/png"); });
+      zip.file("1pd-card-"+("0"+(i+1)).slice(-2)+".png", blob);
+    }
+    setStatus("zipping ...");
+    var out=await zip.generateAsync({type:"blob"});
+    var slug=(state.date||"deck").replace(/[^0-9A-Za-z]+/g,"-");
+    saveBlob(out, "1pd-"+slug+"-cards.zip");
+    setStatus("done: zip saved ("+cards.length+" cards)");
+  }catch(e){ setStatus("error: "+e.message); console.error(e); }
+}
+
+// ---------- wiring ----------
+function bind(id, key){ var el=$(id); el.oninput=function(){ state[key]=el.value; render(); }; }
+bind("f-handle","handle"); bind("f-date","date"); bind("f-headline","headline");
+bind("f-chain","chain"); bind("f-imgcap","imgcap"); bind("f-insight","insight"); bind("f-prompt","prompt"); bind("f-tags","tags");
+
+// ---------- bold: wrap selection in **...** (toggles off if already bold) ----------
+function wrapBold(ta, key){
+  var s=ta.selectionStart, e=ta.selectionEnd, v=ta.value;
+  if(s===e) return;                       // nothing selected -> no-op
+  var before=v.slice(0,s), sel=v.slice(s,e), after=v.slice(e), nv, ns, ne;
+  if(sel.length>=4 && sel.slice(0,2)==="**" && sel.slice(-2)==="**"){   // unwrap: **x** selected
+    var inner=sel.slice(2,-2); nv=before+inner+after; ns=s; ne=s+inner.length;
+  } else if(before.slice(-2)==="**" && after.slice(0,2)==="**"){        // unwrap: markers just outside selection
+    nv=before.slice(0,-2)+sel+after.slice(2); ns=s-2; ne=e-2;
+  } else {                                                              // wrap
+    nv=before+"**"+sel+"**"+after; ns=s+2; ne=e+2;
+  }
+  ta.value=nv; ta.setSelectionRange(ns,ne); ta.focus();
+  state[key]=ta.value; render();
+}
+Array.prototype.forEach.call(document.querySelectorAll(".btn-bold"), function(b){
+  var taId=b.getAttribute("data-bold"), ta=$(taId), key=(taId==="f-insight")?"insight":"headline";
+  b.onclick=function(){ wrapBold(ta, key); };
+  ta.addEventListener("keydown", function(ev){
+    if((ev.ctrlKey||ev.metaKey) && (ev.key==="b"||ev.key==="B")){ ev.preventDefault(); wrapBold(ta, key); }
+  });
+});
+
+$("add-step").onclick=function(){ state.steps.push({tool:"",act:""}); renderSteps(); render(); };
+
+var drop=$("drop"), fileInput=$("f-images");
+drop.onclick=function(){ fileInput.click(); };
+fileInput.onchange=function(){ addFiles(this.files); this.value=""; };
+["dragenter","dragover"].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.add("drag"); }); });
+["dragleave","drop"].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.remove("drag"); }); });
+drop.addEventListener("drop",function(e){ if(e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
+// also allow dropping anywhere on the deck
+window.addEventListener("dragover",function(e){ e.preventDefault(); });
+window.addEventListener("drop",function(e){ e.preventDefault(); if(e.target.closest && e.target.closest(".drop")) return; if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+
+Array.prototype.forEach.call(document.querySelectorAll('input[name=tpl]'), function(r){
+  r.onchange = function(){ if(this.checked){ state.template = this.value; render(); } };
+});
+
+$("dl-all").onclick=dlAll;
+$("reset").onclick=function(){
+  if(!confirm("입력 내용을 모두 지울까요?")) return;
+  state={template:state.template,handle:$("f-handle").value||"@ssuperwasabi",date:todayStr(),headline:"",chain:"",imgcap:"",images:[],steps:[{tool:"",act:""}],insight:"",prompt:"",tags:""};
+  $("f-date").value=state.date; ["f-headline","f-chain","f-imgcap","f-insight","f-prompt","f-tags"].forEach(function(i){$(i).value="";});
+  renderThumbs(); renderSteps(); render();
+};
+
+// init
+state.date=todayStr(); $("f-date").value=state.date;
+renderSteps(); renderThumbs(); render();
+</script>
+</body>
+</html>

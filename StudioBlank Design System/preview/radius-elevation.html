@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 40px 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: stretch; }
+  .panel { border: 1px solid var(--sb-border); padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+  .squares { display: flex; gap: 0; }
+  .sq { width: 56px; height: 56px; background: var(--sb-ink); }
+  .sq.rounded { border-radius: 8px; }
+  .meta { font: var(--sb-text-mono); font-size: 11px; color: var(--sb-fg-2); }
+  .title { font: 600 18px/1.2 Inter; }
+  .x { color: var(--sb-fg-2); position: relative; }
+  .x::after { content:""; position: absolute; inset: 0; border-top: 1px solid var(--sb-stone-300); transform: rotate(-12deg); top: 50%; }
+</style></head>
+<body><div class="card">
+  <div class="panel">
+    <div>
+      <div class="title">radius-none</div>
+      <div class="meta">All elements. 0px.</div>
+    </div>
+    <div class="squares">
+      <div class="sq"></div>
+      <div class="sq" style="margin-left:8px; background: var(--sb-stone-200)"></div>
+      <div class="sq" style="margin-left:8px; background: var(--sb-stone-100)"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div>
+      <div class="title">shadow-none</div>
+      <div class="meta">No elevation. Depth via spacing &amp; contrast.</div>
+    </div>
+    <div class="squares">
+      <div class="sq" style="background: var(--sb-white); border: 1px solid var(--sb-stone-100)"></div>
+      <div class="sq" style="margin-left:8px; background: var(--sb-white); border: 1px solid var(--sb-ink)"></div>
+      <div class="sq" style="margin-left:8px; background: var(--sb-ink)"></div>
+    </div>
+  </div>
+</div></body></html>

@@ -1,0 +1,18 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 0; }
+  .card { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; padding: 0; border: none; background: transparent; }
+  .swatch { aspect-ratio: 1 / 1; display: flex; flex-direction: column; justify-content: flex-end; padding: 12px; border: 1px solid var(--sb-border); border-right: none; }
+  .swatch:last-child { border-right: 1px solid var(--sb-border); }
+  .name { font: var(--sb-text-body-sm); font-weight: 500; }
+  .hex  { font: var(--sb-text-mono); font-size: 10px; opacity: 0.7; margin-top: 4px; }
+</style></head>
+<body><div class="card">
+  <div class="swatch" style="background:#FAFAFA"><div class="name">50</div><div class="hex">FAFAFA</div></div>
+  <div class="swatch" style="background:#F4F4F5"><div class="name">Stone 50</div><div class="hex">F4F4F5</div></div>
+  <div class="swatch" style="background:#E5E5E5"><div class="name">Stone 100</div><div class="hex">E5E5E5</div></div>
+  <div class="swatch" style="background:#D4D4D8"><div class="name">Stone 200</div><div class="hex">D4D4D8</div></div>
+  <div class="swatch" style="background:#A1A1AA;color:#fff"><div class="name">Stone 300</div><div class="hex">A1A1AA</div></div>
+  <div class="swatch" style="background:#71717A;color:#fff"><div class="name">Stone 500</div><div class="hex">71717A</div></div>
+</div></body></html>

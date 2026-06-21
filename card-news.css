@@ -1,0 +1,344 @@
+/* ============================================================
+   One Prompt a Day — Card News
+   StudioBlank-derived token system, tuned for 1:1 1080×1080 cards.
+   Self-contained: no external CSS dependency. Drop into any page.
+   Whitespace is the design. Monochrome, sharp, type-driven.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+:root {
+  /* ---- Color (monochrome; semantic reserved for system messages) ---- */
+  --sb-ink:        #0A0A0A;
+  --sb-paper:      #FAFAFA;
+  --sb-white:      #FFFFFF;
+  --sb-stone-50:   #F4F4F5;
+  --sb-stone-100:  #E5E5E5;
+  --sb-stone-200:  #D4D4D8;
+  --sb-stone-300:  #A1A1AA;
+  --sb-stone-500:  #71717A;
+
+  --sb-fg-1:  var(--sb-ink);        /* primary text */
+  --sb-fg-2:  var(--sb-stone-500);  /* secondary, captions */
+  --sb-fg-3:  var(--sb-stone-300);  /* tertiary, placeholders */
+  --sb-fg-on-ink: var(--sb-paper);
+
+  --sb-border:        var(--sb-stone-100);
+  --sb-border-strong: var(--sb-ink);
+  --sb-divider:       var(--sb-stone-50);
+
+  /* ---- Type ---- */
+  --sb-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --sb-font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --sb-track-tight:   -0.03em;
+  --sb-track-eyebrow:  0.14em;
+
+  /* ---- Geometry (flat & sharp) ---- */
+  --sb-radius: 0px;
+  --sb-shadow: none;
+
+  /* ---- Card metrics (1080 square) ---- */
+  --card-size:  1080px;
+  --card-pad:   96px;          /* min 64; hero-grade breathing room */
+  --card-gap:   32px;
+}
+
+/* ============================================================
+   Page chrome (the gallery around the cards — never captured)
+   ============================================================ */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--sb-stone-100);
+  font-family: var(--sb-font-sans);
+  color: var(--sb-fg-1);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.page-head {
+  padding: 40px 48px 8px;
+}
+.page-head h1 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: var(--sb-track-tight);
+}
+.page-head p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--sb-fg-2);
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 48px;
+  background: rgba(244, 244, 245, 0.92);
+  border-bottom: 1px solid var(--sb-stone-200);
+}
+.toolbar .btn {
+  font-family: var(--sb-font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 10px 18px;
+  border: 1px solid var(--sb-ink);
+  border-radius: 0;
+  background: var(--sb-ink);
+  color: var(--sb-paper);
+  cursor: pointer;
+  transition: background 160ms cubic-bezier(0.2,0,0,1), color 160ms cubic-bezier(0.2,0,0,1);
+}
+.toolbar .btn.secondary { background: transparent; color: var(--sb-ink); }
+.toolbar .btn:hover { background: var(--sb-stone-500); color: var(--sb-paper); border-color: var(--sb-stone-500); }
+.toolbar .spacer { flex: 1; }
+.toolbar .status { font-size: 12px; color: var(--sb-fg-2); font-family: var(--sb-font-mono); }
+
+/* ============================================================
+   Deck + scaling frames
+   The .card is always rendered at native 1080×1080 so the PNG
+   export is pixel-exact. The .scaler shrinks it for on-screen
+   preview via transform — html2canvas captures the INNER .card,
+   which carries no transform, so output is full resolution.
+   ============================================================ */
+.deck {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 40px;
+  padding: 40px 48px 96px;
+}
+
+.frame {
+  --preview: 0.34;  /* on-screen scale; override per breakpoint */
+  position: relative;
+  width:  calc(var(--card-size) * var(--preview));
+  height: calc(var(--card-size) * var(--preview));
+}
+.scaler {
+  transform: scale(var(--preview));
+  transform-origin: top left;
+  width: var(--card-size);
+  height: var(--card-size);
+}
+
+.frame .dl {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  font-family: var(--sb-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+  border: 1px solid var(--sb-ink);
+  background: var(--sb-paper);
+  color: var(--sb-ink);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 160ms cubic-bezier(0.2,0,0,1), background 160ms, color 160ms;
+}
+.frame:hover .dl { opacity: 1; }
+.frame .dl:hover { background: var(--sb-ink); color: var(--sb-paper); }
+
+.frame .cap {
+  position: absolute;
+  left: 0;
+  bottom: -26px;
+  font-family: var(--sb-font-mono);
+  font-size: 12px;
+  color: var(--sb-fg-2);
+}
+
+/* ============================================================
+   THE CARD — 1080×1080, the only thing exported to PNG
+   ============================================================ */
+.card {
+  position: relative;
+  width: var(--card-size);
+  height: var(--card-size);
+  background: var(--sb-paper);
+  color: var(--sb-fg-1);
+  padding: var(--card-pad);
+  border: 1px solid var(--sb-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--sb-font-sans);
+}
+.card.ink { background: var(--sb-ink); color: var(--sb-fg-on-ink); border-color: var(--sb-ink); }
+.card.ink .eyebrow,
+.card.ink .foot { color: var(--sb-stone-300); }
+.card.ink .rule { background: rgba(250,250,250,0.18); }
+
+/* shared atoms */
+.eyebrow {
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: var(--sb-track-eyebrow);
+  text-transform: uppercase;
+  color: var(--sb-fg-2);
+}
+.mono { font-family: var(--sb-font-mono); }
+.rule { height: 1px; background: var(--sb-stone-200); border: 0; }
+.grow { flex: 1; }
+
+/* footer present on every card */
+.foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 24px;
+  color: var(--sb-fg-2);
+}
+.foot .handle { font-weight: 500; color: inherit; letter-spacing: -0.01em; }
+.foot .pageno { margin-left: auto; font-family: var(--sb-font-mono); font-size: 22px; letter-spacing: 0.04em; }
+
+/* ---- Cover card ---- */
+.card .topline { display: flex; align-items: baseline; justify-content: space-between; }
+.card .date { font-family: var(--sb-font-mono); font-size: 26px; color: var(--sb-fg-2); }
+.card .headline {
+  font-weight: 700;
+  font-size: 84px;
+  line-height: 1.04;
+  letter-spacing: var(--sb-track-tight);
+  margin: 0;
+}
+.card .headline em { font-style: normal; font-weight: 300; color: var(--sb-stone-500); }
+.card .chain {
+  font-family: var(--sb-font-mono);
+  font-size: 32px;
+  line-height: 1.5;
+  color: var(--sb-fg-1);
+  letter-spacing: 0;
+}
+.card.ink .chain { color: var(--sb-fg-on-ink); }
+
+/* ---- Step card ---- */
+.card .stepno {
+  font-family: var(--sb-font-mono);
+  font-size: 28px;
+  letter-spacing: 0.06em;
+  color: var(--sb-fg-2);
+}
+.card .tool {
+  font-weight: 700;
+  font-size: 72px;
+  line-height: 1.05;
+  letter-spacing: var(--sb-track-tight);
+  margin: 0;
+}
+.card .action {
+  font-weight: 300;
+  font-size: 36px;
+  line-height: 1.5;
+  color: var(--sb-fg-1);
+  margin: 0;
+}
+.card.ink .action { color: var(--sb-stone-100); }
+
+/* ---- Insight card ---- */
+.card .insight {
+  font-weight: 300;
+  font-size: 54px;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.card .insight strong { font-weight: 600; }
+
+/* ---- Outro card ---- */
+.card .wordmark {
+  font-weight: 700;
+  font-size: 60px;
+  letter-spacing: -0.04em;
+}
+.card .wordmark em { font-style: normal; font-weight: 300; color: var(--sb-stone-300); }
+.card .tags {
+  font-family: var(--sb-font-mono);
+  font-size: 28px;
+  line-height: 1.7;
+  color: var(--sb-fg-2);
+  word-spacing: 0.1em;
+}
+.card.ink .tags { color: var(--sb-stone-300); }
+
+/* ---- Image card (showcase the actual AI generation) ----
+   StudioBlank rule: image bleeds to the edge, caption sits below
+   with a 1px divider. Embed sources as base64 data URIs so the PNG
+   export never taints the canvas. */
+/* Image card uses a FIXED-size media box (1080 wide x 960 tall) and the
+   cap-bar takes the remaining 120px. html2canvas ignores object-fit AND
+   background-size, stretching any image to its box — so the generator must
+   pre-crop each source to the box aspect (center-cover). A pre-cropped image
+   whose dimensions already match the box renders 1:1 with zero distortion. */
+.card.image { padding: 0; border: 0; }
+.card.image .media {
+  display: block;
+  width: 100%;
+  height: 960px;
+  background-color: var(--sb-stone-100);
+}
+img.media { width: 100%; height: 960px; }
+.card.image .media.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sb-stone-300);
+}
+.card.image .media.placeholder .ph {
+  font-family: var(--sb-font-mono);
+  font-size: 28px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.card.image .cap-bar {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 56px;
+  border-top: 1px solid var(--sb-border);
+  background: var(--sb-paper);
+}
+.card.image .cap-line {
+  font-family: var(--sb-font-mono);
+  font-size: 24px;
+  line-height: 1.4;
+  color: var(--sb-fg-2);
+  margin: 0;
+}
+.card.image .cap-sig {
+  font-family: var(--sb-font-mono);
+  font-size: 22px;
+  color: var(--sb-fg-3);
+  white-space: nowrap;
+}
+
+/* spacing helpers (StudioBlank scale) */
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 16px; }
+.mt-4 { margin-top: 32px; }
+.mt-5 { margin-top: 48px; }
+.mt-6 { margin-top: 64px; }
+.mb-4 { margin-bottom: 32px; }
+.mb-6 { margin-bottom: 64px; }
+
+/* responsive preview scale */
+@media (max-width: 800px) {
+  .frame { --preview: 0.78; }
+  .deck { justify-content: center; }
+}
+@media (min-width: 1500px) {
+  .frame { --preview: 0.4; }
+}

@@ -1,0 +1,116 @@
+/* StudioBlank — colors & typography foundation
+   Ultra-minimal monochrome system for photographer & artist portfolios. */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+:root {
+  /* ------------------------------------------------------------------
+     Color — monochrome with a thin band of semantic accents.
+     One accent in production; semantic colors used sparingly.
+     ------------------------------------------------------------------ */
+  --sb-ink:          #0A0A0A;  /* primary text, actions, inverse surfaces */
+  --sb-paper:        #FAFAFA;  /* page background, inverse text */
+  --sb-white:        #FFFFFF;  /* card / input fills */
+  --sb-stone-50:     #F4F4F5;
+  --sb-stone-100:    #E5E5E5;
+  --sb-stone-200:    #D4D4D8;
+  --sb-stone-300:    #A1A1AA;
+  --sb-stone-500:    #71717A;
+  --sb-stone-900:    #0A0A0A;
+
+  /* Semantic */
+  --sb-success:      #16A34A;
+  --sb-warning:      #CA8A04;
+  --sb-error:        #DC2626;
+  --sb-info:         #71717A;
+
+  /* Surfaces */
+  --sb-surface:           var(--sb-paper);
+  --sb-surface-inverse:   var(--sb-ink);
+  --sb-surface-elevated:  var(--sb-white);
+
+  /* Foreground */
+  --sb-fg-1:        var(--sb-ink);        /* primary text */
+  --sb-fg-2:        var(--sb-stone-500);  /* secondary text, captions */
+  --sb-fg-3:        var(--sb-stone-300);  /* tertiary, placeholders */
+  --sb-fg-on-ink:   var(--sb-paper);
+
+  /* Borders */
+  --sb-border:         var(--sb-stone-100);
+  --sb-border-strong:  var(--sb-ink);
+  --sb-divider:        var(--sb-stone-50);
+
+  /* ------------------------------------------------------------------
+     Type — single family, weight contrast drives hierarchy.
+     ------------------------------------------------------------------ */
+  --sb-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --sb-font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Roles */
+  --sb-text-hero:      700 64px/1.05 var(--sb-font-sans);
+  --sb-text-h1:        700 40px/1.10 var(--sb-font-sans);
+  --sb-text-h2:        600 28px/1.20 var(--sb-font-sans);
+  --sb-text-h3:        600 20px/1.30 var(--sb-font-sans);
+  --sb-text-body:      300 16px/1.65 var(--sb-font-sans);
+  --sb-text-body-sm:   400 14px/1.60 var(--sb-font-sans);
+  --sb-text-caption:   400 12px/1.50 var(--sb-font-sans);
+  --sb-text-mono:      400 13px/1.50 var(--sb-font-mono);
+  --sb-text-eyebrow:   500 11px/1.40 var(--sb-font-sans); /* uppercase, tracked */
+
+  /* Tracking */
+  --sb-track-tight:  -0.02em;
+  --sb-track-normal: 0;
+  --sb-track-wide:   0.05em;
+  --sb-track-eyebrow: 0.14em;
+
+  /* ------------------------------------------------------------------
+     Spacing — base 16. Generous on purpose.
+     ------------------------------------------------------------------ */
+  --sb-space-1:  4px;
+  --sb-space-2:  8px;
+  --sb-space-3:  16px;
+  --sb-space-4:  32px;
+  --sb-space-5:  48px;
+  --sb-space-6:  64px;
+  --sb-space-8:  96px;
+  --sb-space-10: 128px;
+
+  /* Geometry — flat & sharp. */
+  --sb-radius: 0px;
+  --sb-shadow: none;
+  --sb-border-width: 1px;
+
+  /* Motion — barely perceptible. */
+  --sb-duration:  160ms;
+  --sb-duration-fast: 80ms;
+  --sb-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ------------------------------------------------------------------
+   Semantic classes — drop-in roles.
+   ------------------------------------------------------------------ */
+.sb-hero      { font: var(--sb-text-hero);    letter-spacing: var(--sb-track-tight); color: var(--sb-fg-1); }
+.sb-h1        { font: var(--sb-text-h1);      letter-spacing: var(--sb-track-tight); color: var(--sb-fg-1); }
+.sb-h2        { font: var(--sb-text-h2);      letter-spacing: -0.01em; color: var(--sb-fg-1); }
+.sb-h3        { font: var(--sb-text-h3);      color: var(--sb-fg-1); }
+.sb-body      { font: var(--sb-text-body);    color: var(--sb-fg-1); }
+.sb-body-sm   { font: var(--sb-text-body-sm); color: var(--sb-fg-1); }
+.sb-caption   { font: var(--sb-text-caption); color: var(--sb-fg-2); }
+.sb-mono      { font: var(--sb-text-mono);    color: var(--sb-fg-1); }
+.sb-eyebrow   {
+  font: var(--sb-text-eyebrow);
+  letter-spacing: var(--sb-track-eyebrow);
+  text-transform: uppercase;
+  color: var(--sb-fg-2);
+}
+
+/* ------------------------------------------------------------------
+   Reset baseline used across previews & UI kit.
+   ------------------------------------------------------------------ */
+.sb-root {
+  background: var(--sb-surface);
+  color: var(--sb-fg-1);
+  font: var(--sb-text-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

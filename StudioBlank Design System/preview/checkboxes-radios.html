@@ -1,0 +1,30 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .group label.eb { font: var(--sb-text-eyebrow); letter-spacing:.14em; text-transform: uppercase; color: var(--sb-fg-2); display: block; margin-bottom: 14px; }
+  .opt { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font: 400 14px Inter; color: var(--sb-fg-1); }
+  .opt.disabled { color: var(--sb-stone-300); }
+  .box { width: 18px; height: 18px; background:#fff; border: 1px solid #D4D4D8; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; }
+  .box.checked { background:#0A0A0A; border-color:#0A0A0A; color:#FAFAFA; }
+  .box.disabled { background:#F4F4F5; border-color:#E5E5E5; }
+  .check { width: 10px; height: 10px; }
+  .radio { width: 18px; height: 18px; background:#fff; border: 1px solid #D4D4D8; border-radius: 50%; display:inline-flex; align-items:center; justify-content:center; box-sizing: border-box; }
+  .radio.selected { border-color:#0A0A0A; }
+  .radio.selected .dot { width: 8px; height: 8px; background:#0A0A0A; border-radius: 50%; }
+  .radio.disabled { background:#F4F4F5; border-color:#E5E5E5; }
+</style></head>
+<body><div class="card">
+  <div class="group">
+    <label class="eb">Checkboxes</label>
+    <div class="opt"><span class="box"></span> Unchecked</div>
+    <div class="opt"><span class="box checked"><svg class="check" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3" stroke="#FAFAFA" stroke-width="1.5"/></svg></span> Checked</div>
+    <div class="opt disabled"><span class="box disabled"></span> Disabled</div>
+  </div>
+  <div class="group">
+    <label class="eb">Radio buttons</label>
+    <div class="opt"><span class="radio"></span> Unselected</div>
+    <div class="opt"><span class="radio selected"><span class="dot"></span></span> Selected</div>
+    <div class="opt disabled"><span class="radio disabled"></span> Disabled</div>
+  </div>
+</div></body></html>

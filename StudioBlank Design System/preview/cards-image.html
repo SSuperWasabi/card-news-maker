@@ -1,0 +1,27 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 0; }
+  .card { padding: 0; border: none; background: transparent; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .img-card { background: #fff; border: 1px solid #E5E5E5; }
+  .img { aspect-ratio: 4/5; background: linear-gradient(135deg, #1a1a1a, #4a4a4a); display: block; }
+  .img.b { background: linear-gradient(160deg, #c8c8c8, #8a8a8a); }
+  .img.c { background: linear-gradient(135deg, #2a2a2a 0%, #2a2a2a 60%, #888 60%, #888); }
+  .meta { padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 4px; }
+  .title { font: 500 14px/1.4 Inter; color: var(--sb-fg-1); }
+  .sub   { font: var(--sb-text-mono); font-size: 11px; color: var(--sb-fg-2); }
+</style></head>
+<body><div class="card">
+  <div class="img-card">
+    <div class="img"></div>
+    <div class="meta"><div class="title">Glacier, North</div><div class="sub">2024 · Silver gelatin</div></div>
+  </div>
+  <div class="img-card">
+    <div class="img b"></div>
+    <div class="meta"><div class="title">Stones, Series II</div><div class="sub">2023 · Archival pigment</div></div>
+  </div>
+  <div class="img-card">
+    <div class="img c"></div>
+    <div class="meta"><div class="title">Untitled</div><div class="sub">2022 · Edition of 8</div></div>
+  </div>
+</div></body></html>

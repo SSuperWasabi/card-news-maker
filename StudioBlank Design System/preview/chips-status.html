@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 32px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .chip { font: 400 12px/1 Inter; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 14px; height: 28px; display: inline-flex; align-items: center; border-radius: 0; }
+  .published { background:#0A0A0A; color:#FAFAFA; }
+  .draft     { background: transparent; color:#71717A; border: 1px solid #D4D4D8; }
+  .archived  { background:#F4F4F5; color:#A1A1AA; }
+  .featured  { background: transparent; color:#0A0A0A; border: 1px solid #0A0A0A; }
+  .label { font: var(--sb-text-eyebrow); letter-spacing:.14em; text-transform: uppercase; color: var(--sb-fg-2); margin-bottom: 12px; }
+</style></head>
+<body><div class="card">
+  <div class="label">Status Chips</div>
+  <div class="row">
+    <span class="chip published">Published</span>
+    <span class="chip draft">Draft</span>
+    <span class="chip archived">Archived</span>
+    <span class="chip featured">Featured</span>
+  </div>
+</div></body></html>

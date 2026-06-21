@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 36px 32px; display: flex; gap: 56px; align-items: center; justify-content: center; }
+  .stack { position: relative; display: inline-block; }
+  .anchor { font: 500 14px Inter; color: var(--sb-fg-1); padding: 8px 12px; border: 1px solid var(--sb-stone-200); background:#fff; }
+  .tip { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); background:#0A0A0A; color:#FAFAFA; font: 400 12px/1.4 Inter; padding: 8px 12px; max-width: 200px; white-space: nowrap; }
+  .tip::after { content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #0A0A0A; }
+  .meta { font: 400 11px "IBM Plex Mono"; color: var(--sb-fg-2); margin-top: 18px; text-align: center; }
+</style></head>
+<body><div class="card">
+  <div>
+    <div class="stack">
+      <div class="tip">Edition of 12 · 24 × 30 in</div>
+      <div class="anchor">Print details</div>
+    </div>
+    <div class="meta">Default — top, 6px arrow</div>
+  </div>
+  <div>
+    <div class="stack">
+      <div class="tip">Press <span style="opacity:.6">&#8984;K</span></div>
+      <div class="anchor">Search</div>
+    </div>
+    <div class="meta">With shortcut</div>
+  </div>
+</div></body></html>

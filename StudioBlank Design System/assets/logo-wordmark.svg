@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" width="240" height="64">
+  <rect x="0" y="0" width="48" height="48" fill="#0A0A0A"></rect>
+  <rect x="24" y="24" width="24" height="24" fill="#FAFAFA"></rect>
+  <text x="68" y="36" font-family="Inter, sans-serif" font-weight="700" font-size="32" letter-spacing="-1.2" fill="#0A0A0A">studio<tspan font-weight="300" fill="#A1A1AA">blank</tspan></text>
+</svg>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+  .card { padding: 32px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .chip { font: 400 12px/1 Inter; text-transform: uppercase; letter-spacing: 0.05em; padding: 0 14px; height: 28px; display: inline-flex; align-items: center; border-radius: 0; }
+  .filter-default  { background: transparent; color:#71717A; border: 1px solid #D4D4D8; }
+  .filter-selected { background:#0A0A0A; color:#FAFAFA; border: 1px solid #0A0A0A; }
+  .filter-hover    { background:#F4F4F5; color:#0A0A0A; border: 1px solid #A1A1AA; }
+  .label { font: var(--sb-text-eyebrow); letter-spacing:.14em; text-transform: uppercase; color: var(--sb-fg-2); margin-bottom: 12px; }
+  .group + .group { margin-top: 24px; }
+</style></head>
+<body><div class="card">
+  <div class="group">
+    <div class="label">Filter Chips</div>
+    <div class="row">
+      <span class="chip filter-selected">All</span>
+      <span class="chip filter-default">Landscape</span>
+      <span class="chip filter-default">Portrait</span>
+      <span class="chip filter-hover">Street</span>
+      <span class="chip filter-default">Studio</span>
+      <span class="chip filter-default">Archive</span>
+    </div>
+  </div>
+</div></body></html>

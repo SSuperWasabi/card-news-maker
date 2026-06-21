@@ -1,0 +1,39 @@
+/* Shared preview card chrome.
+   Each card is a 700×<height> swatch the design system tab embeds.
+   Cards skip titles — the asset name renders OUTSIDE. */
+
+@import url("../colors_and_type.css");
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--sb-paper);
+  color: var(--sb-fg-1);
+  font: var(--sb-text-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  width: 700px;
+  box-sizing: border-box;
+  padding: 32px;
+  background: var(--sb-white);
+  border: 1px solid var(--sb-border);
+}
+
+.row { display: flex; align-items: center; gap: var(--sb-space-3); }
+.col { display: flex; flex-direction: column; }
+.grid { display: grid; }
+.gap-2 { gap: var(--sb-space-2); }
+.gap-3 { gap: var(--sb-space-3); }
+.gap-4 { gap: var(--sb-space-4); }
+.gap-5 { gap: var(--sb-space-5); }
+
+.label {
+  font: var(--sb-text-eyebrow);
+  letter-spacing: var(--sb-track-eyebrow);
+  text-transform: uppercase;
+  color: var(--sb-fg-2);
+}
+.mono   { font: var(--sb-text-mono); color: var(--sb-fg-2); }
+.value  { font: var(--sb-text-body-sm); color: var(--sb-fg-1); }

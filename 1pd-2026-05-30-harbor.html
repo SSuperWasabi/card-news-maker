@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Prompt a Day — 2026.05.30 · Harbor</title>
+<link rel="stylesheet" href="card-news.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+  <div class="page-head">
+    <h1>One Prompt a Day — 2026.05.30</h1>
+    <p>StudioBlank system · 1080×1080 · hover a card for its PNG button</p>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn" onclick="dlAll()">↓ Download all PNG</button>
+    <button class="btn secondary" onclick="window.print()">Print / PDF</button>
+    <div class="spacer"></div>
+    <div class="status mono" id="status">ready · 6 cards</div>
+  </div>
+
+  <div class="deck" id="deck">
+
+    <!-- 01 · COVER -->
+    <div class="frame">
+      <div class="scaler">
+        <div class="card ink" id="c1">
+          <div class="topline">
+            <span class="eyebrow">One Prompt a Day</span>
+            <span class="date mono">2026.05.30</span>
+          </div>
+          <div class="grow"></div>
+          <h2 class="headline">One still <em>→</em><br>a cinematic<br>loop.</h2>
+          <div class="chain mt-4">Midjourney v7 → Magnific → Kling 1.6</div>
+          <div class="grow"></div>
+          <hr class="rule mb-4">
+          <div class="foot">
+            <span class="handle">@ssuperwasabi</span>
+            <span class="pageno">01 / 06</span>
+          </div>
+        </div>
+      </div>
+      <button class="dl" onclick="dl('c1','1pd-card-01.png')">↓ PNG</button>
+      <span class="cap">01 · cover</span>
+    </div>
+
+    <!-- 02 · STEP -->
+    <div class="frame">
+      <div class="scaler">
+        <div class="card" id="c2">
+          <div class="topline">
+            <span class="eyebrow">Workflow</span>
+            <span class="stepno mono">01 / 03</span>
+          </div>
+          <div class="grow"></div>
+          <h2 class="tool">Midjourney<br>v7</h2>
+          <p class="action mt-3">Base still — foggy harbor, 35mm</p>
+          <div class="grow"></div>
+          <hr class="rule mb-4">
+          <div class="foot">
+            <span class="handle">@ssuperwasabi</span>
+            <span class="pageno">02 / 06</span>
+          </div>
+        </div>
+      </div>
+      <button class="dl" onclick="dl('c2','1pd-card-02.png')">↓ PNG</button>
+      <span class="cap">02 · step</span>
+    </div>
+
+    <!-- 03 · STEP -->
+    <div class="frame">
+      <div class="scaler">
+        <div class="card" id="c3">
+          <div class="topline">
+            <span class="eyebrow">Workflow</span>
+            <span class="stepno mono">02 / 03</span>
+          </div>
+          <div class="grow"></div>
+          <h2 class="tool">Magnific</h2>
+          <p class="action mt-3">Upscale + detail enhance to 4K</p>
+          <div class="grow"></div>
+          <hr class="rule mb-4">
+          <div class="foot">
+            <span class="handle">@ssuperwasabi</span>
+            <span class="pageno">03 / 06</span>
+          </div>
+        </div>
+      </div>
+      <button class="dl" onclick="dl('c3','1pd-card-03.png')">↓ PNG</button>
+      <span class="cap">03 · step</span>
+    </div>
+
+    <!-- 04 · STEP -->
+    <div class="frame">
+      <div class="scaler">
+        <div class="card" id="c4">
+          <div class="topline">
+            <span class="eyebrow">Workflow</span>
+            <span class="stepno mono">03 / 03</span>
+          </div>
+          <div class="grow"></div>
+          <h2 class="tool">Kling 1.6</h2>
+          <p class="action mt-3">Image-to-video, slow push-in</p>
+          <div class="grow"></div>
+          <hr class="rule mb-4">
+          <div class="foot">
+            <span class="handle">@ssuperwasabi</span>
+            <span class="pageno">04 / 06</span>
+          </div>
+        </div>
+      </div>
+      <button class="dl" onclick="dl('c4','1pd-card-04.png')">↓ PNG</button>
+      <span class="cap">04 · step</span>
+    </div>
+
+    <!-- 05 · INSIGHT -->
+    <div class="frame">
+      <div class="scaler">
+        <div class="card" id="c5">
+          <span class="eyebrow">Takeaway</span>
+          <div class="grow"></div>
+          <p class="insight">The gap between a photo and a moving image keeps shrinking. <strong>Make the still first. The motion follows.</strong></p>
+          <div class="grow"></div>
+          <hr class="rule mb-4">
+          <div class="foot">
+            <span class="handle">@ssuperwasabi</span>
+            <span class="pageno">05 / 06</span>
+          </div>
+        </div>
+      </div>
+      <button class="dl" onclick="dl('c5','1pd-card-05.png')">↓ PNG</button>
+      <span class="cap">05 · insight</span>
+    </div>
+
+    <!-- 06 · OUTRO -->
+    <div class="frame">
+      <div class="scaler">
+        <div class="card ink" id="c6">
+          <div class="topline">
+            <span class="eyebrow">One Prompt a Day</span>
+            <span class="date mono">let's just have fun. :)</span>
+          </div>
+          <div class="grow"></div>
+          <div class="wordmark">One Prompt<br>a Day<em>.</em></div>
+          <div class="tags mt-5">#midjourney #magnific<br>#kling #AIvideo<br>#SSUPERWASABI</div>
+          <div class="grow"></div>
+          <hr class="rule mb-4">
+          <div class="foot">
+            <span class="handle">@ssuperwasabi</span>
+            <span class="pageno">06 / 06</span>
+          </div>
+        </div>
+      </div>
+      <button class="dl" onclick="dl('c6','1pd-card-06.png')">↓ PNG</button>
+      <span class="cap">06 · outro</span>
+    </div>
+
+  </div>
+
+<script>
+  const statusEl = document.getElementById('status');
+  const setStatus = (t) => { statusEl.textContent = t; };
+
+  async function captureCard(card) {
+    if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
+    const holder = document.createElement('div');
+    holder.style.cssText = 'position:fixed;left:-99999px;top:0;width:1080px;height:1080px;margin:0;padding:0;';
+    const clone = card.cloneNode(true);
+    clone.style.transform = 'none';
+    holder.appendChild(clone);
+    document.body.appendChild(holder);
+    try {
+      return await html2canvas(clone, {
+        scale: 1,
+        backgroundColor: null,
+        useCORS: true,
+        logging: false,
+        width: 1080,
+        height: 1080
+      });
+    } finally {
+      document.body.removeChild(holder);
+    }
+  }
+
+  async function dl(id, filename) {
+    try {
+      setStatus('rendering ' + filename + ' …');
+      const canvas = await captureCard(document.getElementById(id));
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      setStatus('saved ' + filename);
+    } catch (e) {
+      setStatus('error: ' + e.message);
+      console.error(e);
+    }
+  }
+
+  async function dlAll() {
+    const cards = Array.from(document.querySelectorAll('.card'));
+    setStatus('rendering ' + cards.length + ' cards …');
+    for (let i = 0; i < cards.length; i++) {
+      const n = String(i + 1).padStart(2, '0');
+      await dl(cards[i].id, '1pd-card-' + n + '.png');
+      await new Promise(r => setTimeout(r, 300));
+    }
+    setStatus('done · ' + cards.length + ' cards saved');
+  }
+</script>
+</body>
+</html>
