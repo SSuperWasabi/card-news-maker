@@ -47,9 +47,10 @@ body{font-family:var(--sb-font-sans);color:var(--sb-fg-1);background:var(--sb-st
 .section-h{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--sb-fg-2);
   margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--sb-stone-100);}
 
-.step-row{display:flex;gap:6px;margin-bottom:6px;}
-.step-row input{flex:1;min-width:0;}
+.step-row{display:flex;gap:6px;margin-bottom:6px;align-items:flex-start;}
+.step-row input,.step-row textarea{flex:1;min-width:0;}
 .step-row .tool-in{flex:0 0 120px;}
+.step-row .act-in{resize:vertical;min-height:2.4em;line-height:1.4;font:inherit;}
 .btn-mini{font-family:var(--sb-font-mono);font-size:12px;border:1px solid var(--sb-stone-200);background:var(--sb-white);
   color:var(--sb-fg-1);padding:0 10px;cursor:pointer;border-radius:0;}
 .btn-mini:hover{background:var(--sb-ink);color:var(--sb-paper);border-color:var(--sb-ink);}
@@ -191,6 +192,7 @@ body{font-family:var(--sb-font-sans);color:var(--sb-fg-1);background:var(--sb-st
 .cam-body .pt{flex:1;display:flex;align-items:center;}
 .cam-body .pt p{font-weight:300;font-size:66px;line-height:1.32;letter-spacing:-0.02em;margin:0;}
 .cam-body .pt strong{font-weight:700;}
+.cam-body .cam-tags{font-family:var(--sb-font-mono);font-size:26px;line-height:1.6;color:var(--sb-stone-500);word-spacing:.08em;margin-bottom:22px;}
 .cam-body .brule{height:1px;background:var(--sb-stone-100);border:0;margin-bottom:22px;}
 .cam-body .foot{display:flex;align-items:center;justify-content:space-between;font-size:24px;color:var(--sb-stone-500);}
 .cam-body .foot .handle{font-weight:500;}.cam-body .foot .pageno{font-family:var(--sb-font-mono);}
@@ -452,11 +454,10 @@ function renderSteps(){
   state.steps.forEach(function(s,i){
     var row=document.createElement("div"); row.className="step-row";
     row.innerHTML='<input class="tool-in" type="text" placeholder="툴" value="'+esc(s.tool)+'">'+
-                  '<input type="text" placeholder="한 일" value="'+esc(s.act)+'">'+
+                  '<textarea class="act-in" rows="2" placeholder="한 일 (줄바꿈 가능)">'+esc(s.act)+'</textarea>'+
                   '<button class="btn-mini" title="삭제">&times;</button>';
-    var ins=row.querySelectorAll("input");
-    ins[0].oninput=function(){ state.steps[i].tool=this.value; render(); };
-    ins[1].oninput=function(){ state.steps[i].act=this.value; render(); };
+    row.querySelector(".tool-in").oninput=function(){ state.steps[i].tool=this.value; render(); };
+    row.querySelector(".act-in").oninput=function(){ state.steps[i].act=this.value; render(); };
     row.querySelector("button").onclick=function(){ state.steps.splice(i,1); if(!state.steps.length) state.steps.push({tool:"",act:""}); renderSteps(); render(); };
     wrap.appendChild(row);
   });
@@ -541,7 +542,7 @@ function buildCardsCamera(){
     wfRows += '<div>'+
       '<div class="stepno">'+("0"+(i+1)).slice(-2)+'</div>'+
       '<div class="tool">'+(esc(s.tool)||'&nbsp;')+'</div>'+
-      (s.act ? '<div class="desc">'+esc(s.act)+'</div>' : '')+
+      (s.act ? '<div class="desc">'+nl2br(s.act)+'</div>' : '')+
     '</div>';
   });
   html += frame(
@@ -553,10 +554,14 @@ function buildCardsCamera(){
 
   // ---- 04 main body ----
   page++; id=page;
+  var bodyTags = (state.tags||"").trim();
+  if(bodyTags && !/#SSUPERWASABI/i.test(bodyTags)) bodyTags += " #SSUPERWASABI";
+  if(!bodyTags) bodyTags = "#SSUPERWASABI";
   html += frame(
     '<div class="card cam-body" id="card'+id+'">'+
       '<span class="eb">The Point</span>'+
       '<div class="pt"><p>'+(mdBold(state.insight)||'&nbsp;')+'</p></div>'+
+      '<div class="cam-tags">'+esc(bodyTags)+'</div>'+
       '<hr class="brule">'+
       '<div class="foot"><span class="handle">'+handle+'</span><span class="pageno">'+pp(page,total)+'</span></div>'+
     '</div>', 'body');
@@ -639,7 +644,7 @@ function buildCardsClassic(){
         '<div class="topline"><span class="eyebrow">Workflow</span><span class="stepno mono">'+pp(k+1,steps.length).replace(/ \/ /,' / ')+'</span></div>'+
         '<div class="grow"></div>'+
         '<h2 class="tool">'+(esc(s.tool)||'&nbsp;')+'</h2>'+
-        '<p class="action">'+esc(s.act)+'</p>'+
+        '<p class="action">'+nl2br(s.act)+'</p>'+
         '<div class="grow"></div><hr class="rule mb-4">'+
         '<div class="foot"><span class="handle">'+handle+'</span><span class="pageno">'+pp(page,total)+'</span></div>'+
       '</div>', 'step '+(k+1));
