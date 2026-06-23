@@ -470,10 +470,11 @@ function buildCards(){
 }
 
 function camHeadline(){
-  // first line -> weight 800; following lines -> light (300). Empty -> placeholder.
+  // first line -> weight 800; every following line stays on its own line, light (300).
+  // each Enter in the textarea = a real line break (no longer collapsed into one line).
   var lines = (state.headline||"Close-up\nportraits.").split("\n");
   var first = esc(lines.shift());
-  var rest = lines.length ? '<br><span class="lt">'+esc(lines.join(" "))+'</span>' : '';
+  var rest = lines.length ? '<br><span class="lt">'+lines.map(esc).join("<br>")+'</span>' : '';
   return first + rest;
 }
 
